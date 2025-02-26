@@ -6,13 +6,8 @@ python3 -m venv .venv
 ```
 
 ## Activate virtual environment (optional)
-Linux
 ```
 source .venv/bin/activate
-```
-Windows
-```
-.venv\Scripts\activate.bat
 ```
 
 ## Install dependencies

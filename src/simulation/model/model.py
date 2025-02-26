@@ -1,11 +1,11 @@
 import mesa
 import mesa_geo as mg
 
-from ..space.road_network import RoadNetwork
-from ..space.city import City
-from ..space.buildings import Buildings
-from ..agent.geo_agents import Road
-from ..agent.building import Building
+from ..environment.road_network import RoadNetwork
+from ..environment.city import City
+from ..environment.buildings import Buildings
+from ..agents.geo_agents import Road
+from ..agents.building import Building
 
 class EvacuationModel(mesa.Model):
     roads: RoadNetwork

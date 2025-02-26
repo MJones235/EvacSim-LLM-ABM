@@ -1,7 +1,7 @@
 import mesa_geo as mg
 
-from ..agent.geo_agents import Road
-from ..agent.building import Building
+from src.simulation.agents.building import Building
+from src.simulation.agents.geo_agents import Road
 
 def agent_portrayal(agent: mg.GeoAgent) -> dict:
     portrayal = {}

@@ -2,6 +2,5 @@ mesa
 mesa-geo
 geopandas
 osmnx
-networkx
-ray
 langchain_ollama
+ray

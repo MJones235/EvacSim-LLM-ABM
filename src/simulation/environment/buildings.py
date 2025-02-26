@@ -1,5 +1,3 @@
-import networkx as nx
-from sklearn.neighbors import KDTree
 import pyproj
 import osmnx as ox
 from geopandas import GeoDataFrame
