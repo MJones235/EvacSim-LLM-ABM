@@ -41,7 +41,7 @@ class EvacuationModel(mesa.Model):
 
     def _create_population(self, population: dict[str, Any]) -> None:
         for p in population:
-            person = Person(self, p['geometry'], self.crs, p['name'], p['age'], p['occupation'], p['plans'], p['current_location'], p['leave_time'])
+            person = Person(self, p['geometry'], self.crs, p['name'], p['age'], p['occupation'], p['plans'], p['current_activity'], p['current_location'], p['leave_time'])
             self.space.add_agents(person)
 
         

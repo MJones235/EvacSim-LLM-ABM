@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from src.services.llm_service import LLMService
 from src.services.osm_service import OSMService
@@ -28,7 +28,7 @@ class PopulationService:
             except ValueError:
                 (category, location) = weighted_random_selection(feature_count)
                 new_profile['geometry'] = random_point_in_polygon(self.osmService.get_feature_coordinates(address, search_radius_m, category, location, self.crs))
-            print(new_profile)
+            new_profile['leave_time'] = date + timedelta(minutes=new_profile['duration'])
             agent_profiles.append(new_profile)
 
         return agent_profiles

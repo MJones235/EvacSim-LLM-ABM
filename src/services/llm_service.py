@@ -43,13 +43,15 @@ class LLMService:
         {profiles_list}
 
         Please generate a new, unique description of a person who might be present in this location at that time.
+        Consider the time of day and day of the week.
         Return the description as a valid JSON object with:
         - 'name' (str)
         - 'age' (int)
         - 'occupation' (str)
         - 'current_location' (str, must be one of {list(feature_count["amenity"].keys()) + list(feature_count["building"].keys()) + list(feature_count["landuse"].keys())})
-        - 'leave_time' (ISO 8601 format)
-        - 'plans' (list of activities)
+        - 'current_activity' (str, what is the agent currently doing)
+        - 'duration' (int, how much longer will the person remain at their current location in minutes)
+        - 'plans' (list of activities the person wants to carry out today)
 
         Ensure that your response is **only the JSON object**.
         """
