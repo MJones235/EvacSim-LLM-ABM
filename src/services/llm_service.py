@@ -4,6 +4,7 @@ from src.providers.llm_provider.llm_factory import LLMFactory
 from src.providers.llm_provider.llm_provider import LLMProvider
 from src.repositories.llm_logs_repository import LLMLogsRepository
 import json
+import hashlib
 
 class LLMService:
     provider: LLMProvider
@@ -13,9 +14,21 @@ class LLMService:
         self.provider = LLMFactory.get_provider(provider)
         self.llm_logs_repository = LLMLogsRepository()
 
-    def query_llm(self, prompt: str, format: str = "json") -> dict | str:
+    def query_llm(self, prompt: str, format: str = "json", use_cache: bool = False) -> dict | str:
+        prompt_hash = self._hash_prompt(prompt)
+
+        if use_cache:
+            cached_response = self.llm_logs_repository.get_cached_response(prompt_hash)
+            if cached_response:
+                return json.loads(cached_response) if format == "json" else cached_response
+
         response = self.provider.call_llm(prompt, format)
+        self.llm_logs_repository.cache_response(prompt_hash, prompt, json.dumps(response))
+
         return response
+    
+    def _hash_prompt(self, prompt: str) -> str:
+        return hashlib.sha256(prompt.encode()).hexdigest()
     
     def generate_area_description(self, address: str, feature_count: dict[str, Any]):
         prompt = f"""
@@ -52,6 +65,43 @@ class LLMService:
         - 'current_activity' (str, what is the agent currently doing)
         - 'duration' (int, how much longer will the person remain at their current location in minutes)
         - 'plans' (list of activities the person wants to carry out today)
+
+        Ensure that your response is **only the JSON object**.
+        """
+
+        return self.query_llm(prompt, format="json")
+    
+    def generate_next_destination(self, date: datetime, agent: dict[str, Any], feature_count: dict[str, Any], address:str, area_description: str):
+        prompt = f"""
+        Imagine that it is {date.strftime("%R")} on {date.strftime("%A %e %B")}.
+        You are simulating the movements of a person in {address}.
+        {area_description}
+
+        This is the current profile of the person:
+        - Name: {agent["name"]}
+        - Age: {agent["age"]}
+        - Occupation: {agent["occupation"]}
+        - Current Location: {agent["current_location"]}
+        - Current Activity: {agent["current_activity"]}
+        - Time Remaining at Current Location: {agent["duration"]} minutes
+        - Planned Activities: {', '.join(agent["plans"]) if agent["plans"] else "None"}
+
+        Available locations nearby:
+        - Amenities: {', '.join(feature_count["amenity"].keys())}
+        - Buildings: {', '.join(feature_count["building"].keys())}
+        - Land Use Areas: {', '.join(feature_count["landuse"].keys())}
+
+        Please decide where the person will go next based on:
+        - Their current activity and remaining time at their current location.
+        - Their occupation, habits, and responsibilities.
+        - The time of day and day of the week.
+        - Their planned activities for the day.
+
+        Return the decision as a JSON object with:
+        - 'next_location' (str, must be one of the available locations above)
+        - 'next_activity' (str, what the agent will do at the next location)
+        - 'duration' (int, anticipated duration of the next activity in minutes)
+        - 'updated_plans' (list of remaining activities after this action)
 
         Ensure that your response is **only the JSON object**.
         """

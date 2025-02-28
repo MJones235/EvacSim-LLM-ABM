@@ -23,6 +23,7 @@ class SimulationRunner:
             "address": address,
             "simulation_radius": simulation_radius,
             "population": population,
+            "start_time": simulation_start,
             "model_crs": self.crs
         }
         model = EvacuationModel(**model_params)

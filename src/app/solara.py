@@ -6,7 +6,7 @@ from mesa_geo.visualization import make_geospace_component
 from mesa.visualization import SolaraViz
 from mesa_geo.visualization import make_geospace_component
 from src.simulation.model.model import EvacuationModel
-from src.visualisation.solara_vis import AgentProfileBrowser, agent_portrayal
+from src.visualisation.solara_vis import AgentProfileBrowser, Clock, agent_portrayal
 import ray
 
 address = "Loyalty Road, Hartlepool, UK"
@@ -22,14 +22,16 @@ model_params = {
     "address": address,
     "simulation_radius": simulation_radius,
     "population": population,
-    "model_crs": crs
+    "start_time": simulation_start,
+    "model_crs": crs,
 }
 model = EvacuationModel(**model_params)
 page = SolaraViz(
     model,
     [
         make_geospace_component(agent_portrayal),
-        AgentProfileBrowser
+        AgentProfileBrowser,
+        Clock
     ],
     name="EvacSim-LLM-ABM",
     model_params=model_params

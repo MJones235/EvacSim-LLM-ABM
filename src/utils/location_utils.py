@@ -1,14 +1,19 @@
 from typing import Any
 import random
-
+from fuzzywuzzy import process
 import pointpats
 from shapely import Point, Polygon, buffer
 
 def get_location_category(feature_count: dict[str, Any], location: str) -> str:
-    for category, items in feature_count.items():
-        if location in items.keys():
-            return category
-    raise ValueError(f"Unknown location {location}")
+    all_keys = {key: category for category, sub_dict in feature_count.items() for key in sub_dict.keys()}
+
+    # check for exact match
+    if location in all_keys:
+        return all_keys[location]
+
+    # use fuzzy mathing to find the best match
+    best_match, _ = process.extractOne(location, all_keys.keys())
+    return all_keys[best_match]
 
 def weighted_random_selection(data: dict[str, Any]) -> tuple[str,str]:
     weighted_choices = []

@@ -1,6 +1,7 @@
 from typing import Any
 import mesa
 import mesa_geo as mg
+import datetime
 
 from ..agents.person import Person
 
@@ -15,17 +16,20 @@ class EvacuationModel(mesa.Model):
     space: City
     buildings: Buildings
     crs: str
+    time: datetime
 
     def __init__(
         self,  
         address: str,
         simulation_radius: float,
         population: dict[str, Any],
+        start_time: datetime,
         model_crs: str
     ) -> None:
         super().__init__()
 
         self.crs = model_crs
+        self.time = start_time
         self.space = City(model_crs)
 
         self.roads = RoadNetwork(model_crs, address, simulation_radius)
@@ -37,6 +41,7 @@ class EvacuationModel(mesa.Model):
         self._create_population(population)
 
     def step(self) -> None:
+        self.time += datetime.timedelta(seconds=30)
         self.agents.shuffle_do("step")
 
     def _create_population(self, population: dict[str, Any]) -> None:

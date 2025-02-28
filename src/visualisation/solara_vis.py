@@ -36,3 +36,6 @@ def AgentProfileBrowser(model: EvacuationModel):
     df = pd.DataFrame(data)
     df["plans"] = df["plans"].apply(lambda x: "; ".join(x) if isinstance(x, list) else str(x))
     solara.DataFrame(df, items_per_page=5)
+
+def Clock(model: EvacuationModel):
+    solara.Markdown(f"{model.time.strftime("%c")}")
