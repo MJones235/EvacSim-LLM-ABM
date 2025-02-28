@@ -1,5 +1,8 @@
+from typing import Any
 import mesa
 import mesa_geo as mg
+
+from ..agents.person import Person
 
 from ..environment.road_network import RoadNetwork
 from ..environment.city import City
@@ -11,15 +14,18 @@ class EvacuationModel(mesa.Model):
     roads: RoadNetwork
     space: City
     buildings: Buildings
+    crs: str
 
     def __init__(
         self,  
         address: str,
         simulation_radius: float,
-        model_crs="epsg:27700"
+        population: dict[str, Any],
+        model_crs: str
     ) -> None:
         super().__init__()
 
+        self.crs = model_crs
         self.space = City(model_crs)
 
         self.roads = RoadNetwork(model_crs, address, simulation_radius)
@@ -28,6 +34,14 @@ class EvacuationModel(mesa.Model):
         self.buildings = Buildings(model_crs, address, simulation_radius)
         self.space.add_agents(mg.AgentCreator(Building, self).from_GeoDataFrame(self.buildings.df))
 
+        self._create_population(population)
+
     def step(self) -> None:
-        super().step()
+        self.agents.shuffle_do("step")
+
+    def _create_population(self, population: dict[str, Any]) -> None:
+        for p in population:
+            person = Person(self, p['geometry'], self.crs, p['name'], p['age'], p['occupation'], p['plans'], p['current_location'], p['leave_time'])
+            self.space.add_agents(person)
+
         

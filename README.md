@@ -28,6 +28,11 @@ source .env
 ```
 
 ## Run
+Headless
 ```
-solara run scripts/run.py
+python src/app/cli.py run-single
+```
+Solara UI
+```
+solara run src/app/solara.py
 ```

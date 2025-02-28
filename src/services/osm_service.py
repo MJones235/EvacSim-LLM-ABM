@@ -1,5 +1,6 @@
 import osmnx as ox
 from geopandas import GeoDataFrame
+from shapely import Point
 
 class OSMService:
     def _get_feature_count(self, df: GeoDataFrame, col_name: str):
@@ -25,3 +26,14 @@ class OSMService:
             "building": building_count,
             "landuse": landuse_count
         }
+
+    def get_feature_coordinates(self, address: str, radius_m: float, category: str, type: str, crs: str) -> Point:
+        tags = {
+            category: type
+        }
+
+        df = ox.features_from_address(address, tags, radius_m)
+        df.geometry = df.geometry.to_crs(crs)
+        random_feature = df.sample(n=1).iloc[0]
+        return random_feature.geometry
+
