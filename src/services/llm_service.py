@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from src.simulation.agents.person import Person
 from src.providers.llm_provider.llm_factory import LLMFactory
 from src.providers.llm_provider.llm_provider import LLMProvider
 from src.repositories.llm_logs_repository import LLMLogsRepository
@@ -39,7 +40,7 @@ class LLMService:
         OpenStreetMap data giving a count of the features in the area:
         {json.dumps(feature_count, indent=2)}
         """
-        return self.query_llm(prompt, format="")
+        return self.query_llm(prompt, format="", use_cache=True)
 
     
     def generate_person_profile(self, date: datetime, existing_profiles: list[object], address: str, feature_count: dict[str, Any], area_description: str):
@@ -69,9 +70,11 @@ class LLMService:
         Ensure that your response is **only the JSON object**.
         """
 
-        return self.query_llm(prompt, format="json")
+        return self.query_llm(prompt, format="json", use_cache=False)
     
-    def generate_next_destination(self, date: datetime, agent: dict[str, Any], feature_count: dict[str, Any], address:str, area_description: str):
+    def generate_next_destination(self, person: Person, date: datetime, feature_count: dict[str, Any], address:str):
+        area_description = self.generate_area_description(address, feature_count)
+        agent = person.__dict__
         prompt = f"""
         Imagine that it is {date.strftime("%R")} on {date.strftime("%A %e %B")}.
         You are simulating the movements of a person in {address}.
@@ -83,7 +86,6 @@ class LLMService:
         - Occupation: {agent["occupation"]}
         - Current Location: {agent["current_location"]}
         - Current Activity: {agent["current_activity"]}
-        - Time Remaining at Current Location: {agent["duration"]} minutes
         - Planned Activities: {', '.join(agent["plans"]) if agent["plans"] else "None"}
 
         Available locations nearby:
@@ -106,4 +108,4 @@ class LLMService:
         Ensure that your response is **only the JSON object**.
         """
 
-        return self.query_llm(prompt, format="json")
+        return self.query_llm(prompt, format="json", use_cache=False)

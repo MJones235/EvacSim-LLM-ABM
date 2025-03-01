@@ -3,6 +3,9 @@ import mesa
 import mesa_geo as mg
 import datetime
 
+from src.services.llm_service import LLMService
+from src.services.osm_service import OSMService
+
 from ..agents.person import Person
 
 from ..environment.road_network import RoadNetwork
@@ -17,6 +20,10 @@ class EvacuationModel(mesa.Model):
     buildings: Buildings
     crs: str
     time: datetime
+    address: str
+
+    llm_service: LLMService
+    osm_service: OSMService
 
     def __init__(
         self,  
@@ -24,12 +31,16 @@ class EvacuationModel(mesa.Model):
         simulation_radius: float,
         population: dict[str, Any],
         start_time: datetime,
-        model_crs: str
+        model_crs: str,
     ) -> None:
         super().__init__()
 
+        self.llm_service = LLMService()
+        self.osm_service = OSMService()
+
         self.crs = model_crs
         self.time = start_time
+        self.address = address
         self.space = City(model_crs)
 
         self.roads = RoadNetwork(model_crs, address, simulation_radius)
@@ -41,7 +52,7 @@ class EvacuationModel(mesa.Model):
         self._create_population(population)
 
     def step(self) -> None:
-        self.time += datetime.timedelta(seconds=30)
+        self.time += datetime.timedelta(minutes=5)
         self.agents.shuffle_do("step")
 
     def _create_population(self, population: dict[str, Any]) -> None:

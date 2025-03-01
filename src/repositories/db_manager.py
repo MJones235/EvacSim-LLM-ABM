@@ -65,6 +65,13 @@ class DBManager:
             timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (run_id) REFERENCES runs(run_id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS osm_cache (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query_hash TEXT UNIQUE,
+            response TEXT,
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+        );
         """
 
     
