@@ -11,6 +11,8 @@ class LLMService:
     provider: LLMProvider
     llm_logs_repository: LLMLogsRepository
 
+    MAX_RETRIES = 3
+
     def __init__(self, provider: str = "ollama"):
         self.provider = LLMFactory.get_provider(provider)
         self.llm_logs_repository = LLMLogsRepository()
@@ -49,7 +51,9 @@ class LLMService:
             for profile in existing_profiles
         ) if existing_profiles else "None"
 
-        prompt = f"""
+        required_keys = {"name", "age", "occupation", "current_location", "current_activity", "duration", "plans"}
+
+        base_prompt = f"""
         Imagine that it is {date.strftime("%R")} on {date.strftime("%A %e %B")}, and you are observing a person at {address}.
         {area_description}
 
@@ -69,8 +73,31 @@ class LLMService:
 
         Ensure that your response is **only the JSON object**.
         """
+        prompt = base_prompt
 
-        return self.query_llm(prompt, format="json", use_cache=False)
+        for attempt in range(self.MAX_RETRIES):
+            response = self.query_llm(prompt, format="json", use_cache=False)
+            missing_keys = required_keys - response.keys()
+            if not missing_keys:
+                return response
+            
+            prompt = f"""
+            The previous response was missing required fields.
+            Here is the original request:
+
+            {base_prompt}
+
+            Here is your previous incomplete response:
+            {json.dumps(response, indent=2)}
+
+            The following fields were missing: {', '.join(missing_keys)}.
+            Please regenerate the JSON by **keeping all correct values unchanged** and **only filling in the missing fields**.
+            Ensure that your response is **only the JSON object**.
+            """
+
+            print(f"Missing fields {missing_keys}. Requesting correction (Attempt {attempt + 1})...")
+
+        raise ValueError(f"LLM failed to generate a valid response after {self.MAX_RETRIES} attempts.")
     
     def generate_next_destination(self, person: Person, date: datetime, feature_count: dict[str, Any], address:str):
         area_description = self.generate_area_description(address, feature_count)

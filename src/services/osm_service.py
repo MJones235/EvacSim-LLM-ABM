@@ -21,7 +21,7 @@ class OSMService:
         query_string = f"{address}_{radius_m}"
         return hashlib.sha256(query_string.encode()).hexdigest()
 
-    def get_features_near_address(self, address: str, radius_m: float = 500):
+    def get_features_near_address(self, address: str, radius_m):
         query_hash = self._hash_query(address, radius_m)
         cached_result = self.osm_repository.get_cached_response(query_hash)
         if cached_result:

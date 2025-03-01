@@ -17,8 +17,8 @@ class SimulationRunner:
         self.population_service = PopulationService(crs)
         self.model_outputs_repository = ModelOutputsRepository()
 
-    def run(self, address:str, simulation_radius: float, n_agents: int, simulation_start: datetime):
-        population = self.population_service.generate_population(n_agents, address, simulation_start)
+    def get_model(self, address:str, simulation_radius: float, n_agents: int, simulation_start: datetime) -> tuple[EvacuationModel,dict]:
+        population = self.population_service.generate_population(n_agents, address, simulation_radius, simulation_start)
         model_params = {
             "address": address,
             "simulation_radius": simulation_radius,
@@ -27,4 +27,4 @@ class SimulationRunner:
             "model_crs": self.crs
         }
         model = EvacuationModel(**model_params)
-        model.run_model()
+        return model, model_params

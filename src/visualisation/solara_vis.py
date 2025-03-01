@@ -5,7 +5,7 @@ import pandas as pd
 from src.simulation.model.model import EvacuationModel
 from src.simulation.agents.person import Person
 from src.simulation.agents.building import Building
-from src.simulation.agents.geo_agents import Road
+from src.simulation.agents.road import Road
 
 def agent_portrayal(agent: mg.GeoAgent) -> dict:
     portrayal = {}

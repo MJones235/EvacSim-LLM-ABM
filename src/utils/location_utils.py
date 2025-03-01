@@ -9,11 +9,11 @@ def get_location_category(feature_count: dict[str, Any], location: str) -> str:
 
     # check for exact match
     if location in all_keys:
-        return all_keys[location]
+        return location, all_keys[location]
 
     # use fuzzy mathing to find the best match
     best_match, _ = process.extractOne(location, all_keys.keys())
-    return all_keys[best_match]
+    return best_match, all_keys[best_match]
 
 def weighted_random_selection(data: dict[str, Any]) -> tuple[str,str]:
     weighted_choices = []
