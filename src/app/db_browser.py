@@ -21,14 +21,12 @@ selected_run_id = st.selectbox(title, options=list(run_options.keys()), format_f
 
 if selected_run_id:
     st.subheader("Population")
+    columns = ["name", "age", "occupation", "current_location", "current_activity", "leave_time", "plans"]
     population = population_service.get_population(selected_run_id)
+    population = [{k: v for k, v in item.items() if k in columns} for item in population]
     st.dataframe(population)
 
     st.subheader("LLM Logs")
     logs = llm_service.get_logs_by_run_id(selected_run_id)
-    st.dataframe(logs)
+    st.dataframe(logs, column_order=("prompt", "response", "timestamp"))
     
-    # Future enhancement: Show individual agent logs
-    # selected_agent = st.selectbox("Select an Agent", [agent["name"] for agent in population])
-    # agent_log = get_agent_log(selected_agent)
-    # st.write(agent_log)

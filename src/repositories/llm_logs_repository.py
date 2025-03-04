@@ -32,4 +32,15 @@ class LLMLogsRepository(Repository):
         self.delete("1 = 1", ())
 
     def get_logs_by_run_id(self, run_id):
-        return self.fetch_all("run_id = ?", (run_id,))
+        records = self.fetch_all("run_id = ?", (run_id,))
+        return [
+            {
+                "id": record[0],
+                "run_id": record[1],
+                "prompt_hash": record[2],
+                "prompt": record[3],
+                "response": record[4],
+                "timestamp": record[5]
+            }
+            for record in records
+        ] if records else None
