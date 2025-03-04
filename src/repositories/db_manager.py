@@ -61,7 +61,7 @@ class DBManager:
         CREATE TABLE IF NOT EXISTS llm_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             run_id TEXT,
-            prompt_hash TEXT UNIQUE,
+            prompt_hash TEXT,
             prompt TEXT,
             response TEXT,
             timestamp TEXT DEFAULT CURRENT_TIMESTAMP,

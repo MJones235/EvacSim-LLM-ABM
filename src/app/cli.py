@@ -8,7 +8,7 @@ from src.runners.simulation_runner import SimulationRunner
 
 def parse_args():
     args = {
-        "address": "Loyalty Road, Hartlepool, UK",
+        "address": "Hartlepool, UK",
         "radius": 2000,
         "n_agents": 5,
         "start_time": datetime.now(),

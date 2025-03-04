@@ -13,7 +13,7 @@ class GenerativeDecisionModule(DecisionModule):
         self.osm_service = osm_service
 
     def decide_next_action(self, agent: Person):
-        update = self.llm_service.generate_next_destination(agent, agent.model.time, agent.model.feature_count, agent.model.address)
+        update = self.llm_service.generate_next_destination(agent.model.run_id, agent, agent.model.time, agent.model.feature_count, agent.model.address)
         update['next_location'], category = get_location_category(agent.model.feature_count, update['next_location'])
         update['geometry'] = random_point_in_polygon(self.osm_service.get_feature_coordinates(agent.model.address, agent.model.simulation_radius, category, update['next_location'], agent.model.crs))
         return update

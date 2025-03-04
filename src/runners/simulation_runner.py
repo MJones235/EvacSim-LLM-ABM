@@ -44,6 +44,7 @@ class SimulationRunner:
 
             # Retrieve population from the previous run
             population = self.population_service.get_population(previous_run_id)
+            self.population_service.save_population(run_id, population)
 
         else:
             # Ensure required parameters are provided

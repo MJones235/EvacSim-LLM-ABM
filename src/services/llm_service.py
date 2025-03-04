@@ -17,7 +17,7 @@ class LLMService:
         self.provider = LLMFactory.get_provider(provider)
         self.llm_logs_repository = LLMLogsRepository()
 
-    def query_llm(self, prompt: str, format: str = "json", use_cache: bool = False) -> dict | str:
+    def query_llm(self, run_id: str,  prompt: str, format: str = "json", use_cache: bool = False) -> dict | str:
         prompt_hash = self._hash_prompt(prompt)
 
         if use_cache:
@@ -26,14 +26,14 @@ class LLMService:
                 return json.loads(cached_response) if format == "json" else cached_response
 
         response = self.provider.call_llm(prompt, format)
-        self.llm_logs_repository.cache_response(prompt_hash, prompt, json.dumps(response))
+        self.llm_logs_repository.cache_response(run_id, prompt_hash, prompt, json.dumps(response))
 
         return response
     
     def _hash_prompt(self, prompt: str) -> str:
         return hashlib.sha256(prompt.encode()).hexdigest()
     
-    def generate_area_description(self, address: str, feature_count: dict[str, Any]):
+    def generate_area_description(self, run_id: str, address: str, feature_count: dict[str, Any]):
         prompt = f"""
         Imagine you are writing a short, natural-language description of an area. 
         Using the following OpenStreetMap data as background information about the surroundings of {address}, generate a paragraph describing the area. 
@@ -42,10 +42,10 @@ class LLMService:
         OpenStreetMap data giving a count of the features in the area:
         {json.dumps(feature_count, indent=2)}
         """
-        return self.query_llm(prompt, format="", use_cache=True)
+        return self.query_llm(run_id, prompt, format="", use_cache=True)
 
     
-    def generate_person_profile(self, date: datetime, existing_profiles: list[object], address: str, feature_count: dict[str, Any], area_description: str):
+    def generate_person_profile(self, run_id: str, date: datetime, existing_profiles: list[object], address: str, feature_count: dict[str, Any], area_description: str):
         profiles_list = "\n".join(
             f"{profile['name']}, {profile['age']}, {profile['occupation']}"
             for profile in existing_profiles
@@ -76,7 +76,7 @@ class LLMService:
         prompt = base_prompt
 
         for attempt in range(self.MAX_RETRIES):
-            response = self.query_llm(prompt, format="json", use_cache=False)
+            response = self.query_llm(run_id, prompt, format="json", use_cache=False)
             missing_keys = required_keys - response.keys()
             if not missing_keys:
                 return response
@@ -99,10 +99,13 @@ class LLMService:
 
         raise ValueError(f"LLM failed to generate a valid response after {self.MAX_RETRIES} attempts.")
     
-    def generate_next_destination(self, person: Person, date: datetime, feature_count: dict[str, Any], address:str):
-        area_description = self.generate_area_description(address, feature_count)
+    def generate_next_destination(self, run_id: str, person: Person, date: datetime, feature_count: dict[str, Any], address:str):
+        area_description = self.generate_area_description(run_id, address, feature_count)
         agent = person.__dict__
-        prompt = f"""
+
+        required_keys = {"next_location", "next_activity", "duration", "updated_plans"}
+
+        base_prompt = f"""
         Imagine that it is {date.strftime("%R")} on {date.strftime("%A %e %B")}.
         You are simulating the movements of a person in {address}.
         {area_description}
@@ -135,4 +138,33 @@ class LLMService:
         Ensure that your response is **only the JSON object**.
         """
 
-        return self.query_llm(prompt, format="json", use_cache=False)
+        prompt = base_prompt
+        
+        for attempt in range(self.MAX_RETRIES):
+            response = self.query_llm(run_id, prompt, format="json", use_cache=False)
+            missing_keys = required_keys - response.keys()
+            if not missing_keys:
+                return response
+            
+            prompt = f"""
+            The previous response was missing required fields.
+            Here is the original request:
+
+            {base_prompt}
+
+            Here is your previous incomplete response:
+            {json.dumps(response, indent=2)}
+
+            The following fields were missing: {', '.join(missing_keys)}.
+            Please regenerate the JSON by **keeping all correct values unchanged** and **only filling in the missing fields**.
+            Ensure that your response is **only the JSON object**.
+            """
+
+            print(f"Missing fields {missing_keys}. Requesting correction (Attempt {attempt + 1})...")
+
+        raise ValueError(f"LLM failed to generate a valid response after {self.MAX_RETRIES} attempts.")
+
+    
+    def get_logs_by_run_id(self, run_id):
+        return self.llm_logs_repository.get_logs_by_run_id(run_id)
+

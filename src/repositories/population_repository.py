@@ -3,6 +3,7 @@ from src.repositories.repository import Repository
 import json
 from uuid import uuid4
 from shapely.wkt import loads as wkt_loads
+from datetime import datetime
 
 class PopulationRepository(Repository):
     def table_name(self) -> str:
@@ -41,7 +42,7 @@ class PopulationRepository(Repository):
                 "occupation": record[4],
                 "current_location": record[5],
                 "current_activity": record[6],
-                "leave_time": record[7],
+                "leave_time": datetime.fromisoformat(record[7]),
                 "plans": json.loads(record[8]),
                 "geometry": wkt_loads(record[9]) if record[9] else None
             }
