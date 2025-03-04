@@ -17,6 +17,8 @@ from ..agents.road import Road
 from ..agents.building import Building
 
 class EvacuationModel(mesa.Model):
+    run_id: str
+
     roads: RoadNetwork
     space: City
     buildings: Buildings
@@ -31,14 +33,17 @@ class EvacuationModel(mesa.Model):
     population_service: PopulationService
 
     def __init__(
-        self,  
+        self, 
+        run_id: str,
         address: str,
         simulation_radius: float,
         population: dict[str, Any],
         start_time: datetime,
         model_crs: str,
+        n_agents: int
     ) -> None:
         super().__init__()
+        self.run_id = run_id
 
         self.llm_service = LLMService()
         self.osm_service = OSMService()

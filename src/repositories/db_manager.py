@@ -45,14 +45,16 @@ class DBManager:
         );
 
         CREATE TABLE IF NOT EXISTS population (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             run_id TEXT,
             name TEXT,
             age INTEGER,
             occupation TEXT,
             current_location TEXT,
+            current_activity TEXT,
             leave_time TEXT,
             plans TEXT,
+            geometry TEXT,
             FOREIGN KEY (run_id) REFERENCES runs(run_id) ON DELETE CASCADE
         );
 

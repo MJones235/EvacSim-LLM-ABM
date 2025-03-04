@@ -2,6 +2,7 @@ from datetime import datetime
 import sys
 from mesa.visualization import SolaraViz
 from mesa_geo.visualization import make_geospace_component
+from src.services.run_service import RunService
 from src.visualisation.solara_vis import AgentProfileBrowser, Clock, agent_portrayal
 from src.runners.simulation_runner import SimulationRunner
 
@@ -12,7 +13,9 @@ def parse_args():
         "n_agents": 5,
         "start_time": datetime.now(),
         "crs": "epsg:27700",
-        "interactive": False
+        "interactive": False,
+        "previous_run_id": None,
+        "list_runs": False
     }
 
     expected_args = {
@@ -20,7 +23,8 @@ def parse_args():
         "--radius": int,
         "--n-agents": int,
         "--start-time": str,
-        "--crs": str
+        "--crs": str,
+        "--previous-run-id": str
     }
 
     i = 1
@@ -44,6 +48,9 @@ def parse_args():
         
         elif arg == "--interactive":
             args["interactive"] = True
+
+        elif arg == "--list-runs":
+            args["list_runs"] = True
         
         i += 1
 
@@ -52,8 +59,25 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+
+    if args["list_runs"]:
+        run_service = RunService()
+        runs = run_service.list_runs()
+        if runs:
+            print("\nAvailable Simulation Runs:")
+            for run in runs:
+                print(f"Run ID: {run[0]} | Address: {run[3]} | Agents: {run[5]} | Date: {run[2]}")
+        else:
+            print("\nNo previous runs found.")
+        sys.exit(0)
+
     runner = SimulationRunner(args["crs"])
-    model, params = runner.get_model(args["address"], args["radius"], args["n_agents"], args["start_time"])
+
+    if (args["previous_run_id"]):
+        model, params = runner.get_model(previous_run_id=args["previous_run_id"])
+    else:
+        model, params = runner.get_model(args["address"], args["radius"], args["n_agents"], args["start_time"])
+
     if args["interactive"]:
         page = SolaraViz(
         model,

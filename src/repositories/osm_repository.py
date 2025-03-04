@@ -1,25 +1,30 @@
-from src.repositories.db_manager import DBManager
+from src.repositories.repository import Repository
+import datetime
 
-
-class OSMRepository:
-    db_manager: DBManager
-
-    def __init__(self):
-        self.db_manager = DBManager()
+class OSMRepository(Repository):
+    def table_name(self) -> str:
+        return "osm_cache"
 
     def cache_response(self, query_hash: str, response: str):
-        query = """
-        INSERT INTO osm_cache (query_hash, response, timestamp)
-        VALUES (?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(query_hash) DO UPDATE SET response = excluded.response, timestamp = excluded.timestamp;
         """
-        self.db_manager.execute_query(query, (query_hash, response))
+        Caches OpenStreetMap query results.
+        """
+        data = {
+            "query_hash": query_hash,
+            "response": response,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        self.insert(data)
 
     def get_cached_response(self, query_hash: str):
-        query = "SELECT response FROM osm_cache WHERE query_hash = ? LIMIT 1"
-        result = self.db_manager.execute_query(query, (query_hash,), fetchone=True)
-        return result[0] if result else None
+        """
+        Retrieves a cached response by query hash.
+        """
+        result = self.fetch_one("query_hash = ?", (query_hash,))
+        return result[2] if result else None
 
     def clear_cache(self):
-        query = "DELETE FROM osm_cache"
-        self.db_manager.execute_query(query)
+        """
+        Clears all cached OSM responses.
+        """
+        self.delete("1 = 1", ())
