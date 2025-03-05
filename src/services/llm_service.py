@@ -103,7 +103,7 @@ class LLMService:
         area_description = self.generate_area_description(run_id, address, feature_count)
         agent = person.__dict__
 
-        required_keys = {"next_location", "next_activity", "duration", "updated_plans"}
+        required_keys = {"next_location", "next_activity", "duration", "updated_plans", "reason"}
 
         base_prompt = f"""
         Imagine that it is {date.strftime("%R")} on {date.strftime("%A %e %B")}.
@@ -124,7 +124,6 @@ class LLMService:
         - Land Use Areas: {', '.join(feature_count["landuse"].keys())}
 
         Please decide where the person will go next based on:
-        - Their current activity and remaining time at their current location.
         - Their occupation, habits, and responsibilities.
         - The time of day and day of the week.
         - Their planned activities for the day.
@@ -134,6 +133,7 @@ class LLMService:
         - 'next_activity' (str, what the agent will do at the next location)
         - 'duration' (int, anticipated duration of the next activity in minutes)
         - 'updated_plans' (list of remaining activities after this action)
+        - 'reason' (str, why the agent is making this decision)
 
         Ensure that your response is **only the JSON object**.
         """

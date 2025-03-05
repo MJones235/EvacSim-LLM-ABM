@@ -74,6 +74,20 @@ class DBManager:
             response TEXT,
             timestamp TEXT DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS agent_decision_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id TEXT,
+            agent_id INTEGER,
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+            previous_location TEXT,
+            previous_activity TEXT,
+            next_location TEXT,
+            next_activity TEXT,
+            reason TEXT,
+            FOREIGN KEY (run_id) REFERENCES runs(run_id) ON DELETE CASCADE,
+            FOREIGN KEY (agent_id) REFERENCES population(id) ON DELETE CASCADE
+        );
         """
 
     

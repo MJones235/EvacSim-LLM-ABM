@@ -16,7 +16,7 @@ class PopulationRepository(Repository):
         for agent in agent_profiles:
             data = {
                 "run_id": run_id,
-                "id": str(uuid4()),
+                "id": agent["id"],
                 "name": agent["name"],
                 "age": agent["age"],
                 "occupation": agent["occupation"],

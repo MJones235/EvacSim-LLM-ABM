@@ -7,6 +7,7 @@ from src.simulation.decision.generative_decision_module import GenerativeDecisio
 from src.services.population_service import PopulationService
 from src.services.llm_service import LLMService
 from src.services.osm_service import OSMService
+from src.services.agent_decision_service import AgentDecisionService
 
 from ..agents.person import Person
 
@@ -31,6 +32,7 @@ class EvacuationModel(mesa.Model):
     llm_service: LLMService
     osm_service: OSMService
     population_service: PopulationService
+    agent_decision_service: AgentDecisionService
 
     def __init__(
         self, 
@@ -48,6 +50,7 @@ class EvacuationModel(mesa.Model):
         self.llm_service = LLMService()
         self.osm_service = OSMService()
         self.population_service = PopulationService(model_crs)
+        self.agent_decision_service = AgentDecisionService()
 
         self.crs = model_crs
         self.time = start_time
@@ -72,7 +75,7 @@ class EvacuationModel(mesa.Model):
     def _create_population(self, population: dict[str, Any]) -> None:
         decision_module = GenerativeDecisionModule(self.llm_service, self.osm_service)
         for p in population:
-            person = Person(self, p['geometry'], self.crs, decision_module, p['name'], p['age'], p['occupation'], p['plans'], p['current_activity'], p['current_location'], p['leave_time'])
+            person = Person(self, p['geometry'], self.crs, decision_module, p['id'], p['name'], p['age'], p['occupation'], p['plans'], p['current_activity'], p['current_location'], p['leave_time'])
             self.space.add_agents(person)
 
         

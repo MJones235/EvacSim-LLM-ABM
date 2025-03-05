@@ -23,7 +23,8 @@ class RunService:
             "address": address,
             "simulation_radius": simulation_radius,
             "n_agents": n_agents,
-            "simulation_time": simulation_time
+            "simulation_time": simulation_time,
+            "time": datetime.now()
         }
 
         self.run_repository.store_run_metadata(metadata)
